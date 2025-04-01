@@ -128,4 +128,60 @@ You can customize the bot's behavior by:
 
 ## Disclaimer
 
-This bot is intended for adult use only. By using this bot, you acknowledge that you are of legal age in your jurisdiction and take full responsibility for its use and any consequences thereof. 
+This bot is intended for adult use only. By using this bot, you acknowledge that you are of legal age in your jurisdiction and take full responsibility for its use and any consequences thereof.
+
+## Deployment on Koyeb
+
+### What is Koyeb?
+
+Koyeb is a developer-friendly serverless platform that allows you to deploy applications globally. It's perfect for hosting Telegram bots as it provides always-on services with automatic scaling.
+
+### Deployment Steps
+
+1. **Sign up for Koyeb**
+   - Create an account at [koyeb.com](https://www.koyeb.com/)
+
+2. **Set up your project for deployment**
+   - Ensure your repository contains:
+     - `requirements.txt` (with all dependencies)
+     - `Procfile` (specifying the command to run)
+     - `runtime.txt` (specifying Python version)
+     - `Dockerfile` (if you prefer Docker deployment)
+
+3. **Deploy to Koyeb**
+   - From the Koyeb dashboard, click "Create App"
+   - Choose "GitHub" as the deployment method
+   - Select your repository
+   - Configure the following environment variables:
+     ```
+     TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here
+     GEMINI_API_KEY=your_gemini_api_key_here
+     OWNER_ID=your_telegram_user_id_here
+     OWNER_NAME=your_name_here
+     WEBHOOK_URL=https://your-app-name.koyeb.app/
+     ```
+   - Click "Deploy"
+
+4. **Configure Webhooks (Optional)**
+   - By default, the bot will automatically configure webhooks when deployed to Koyeb
+   - If you want to manually set the webhook, you can use the Telegram Bot API:
+     ```
+     https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook?url=https://your-app-name.koyeb.app/<TELEGRAM_BOT_TOKEN>
+     ```
+
+5. **Verify Deployment**
+   - Once deployed, your bot should be online and responsive
+   - You can check the logs in the Koyeb dashboard for any issues
+
+### Maintaining Your Deployed Bot
+
+- **Scaling**: Koyeb automatically scales your application as needed
+- **Updates**: Push changes to your GitHub repository, and Koyeb will automatically redeploy
+- **Monitoring**: Use the Koyeb dashboard to monitor your application's performance and logs
+
+### Troubleshooting
+
+- If your bot isn't responding, check:
+  - The logs in the Koyeb dashboard for errors
+  - That all environment variables are correctly set
+  - That the webhook URL is correctly configured 

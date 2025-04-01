@@ -24,10 +24,19 @@ logger = logging.getLogger(__name__)
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 
+# Check if environment variables are set
+if not TELEGRAM_BOT_TOKEN:
+    logger.error("TELEGRAM_BOT_TOKEN environment variable is not set.")
+    exit(1)
+    
+if not GEMINI_API_KEY:
+    logger.error("GEMINI_API_KEY environment variable is not set.")
+    exit(1)
+
 # Authorization configuration
 OWNER_ID = int(os.getenv('OWNER_ID', '0'))  # Replace with your Telegram ID in .env
 AUTHORIZED_FILE = 'authorized_users.json'
-WAKEUP_WORD = "Mikasa"  # Wake-up word that non-owner users must include
+WAKEUP_WORD = os.getenv('WAKEUP_WORD', "Mikasa")  # Wake-up word that non-owner users must include
 CONFIG_FILE = 'bot_config.json'  # File to store bot configuration
 OWNER_NAME = os.getenv('OWNER_NAME', 'Master')  # Default owner name if not set in .env
 
@@ -857,6 +866,9 @@ def main():
     # Load bot configuration at startup
     load_bot_config()
     
+    # Get port number from environment (Koyeb sets PORT env var)
+    port = int(os.environ.get("PORT", "8080"))
+    
     # Create the Application
     application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
 
@@ -884,9 +896,37 @@ def main():
     # Add error handler
     application.add_error_handler(error)
 
-    # Run the bot
-    print("Starting flirty AI bot with authorization and mention system...")
-    application.run_polling()
+    # Determine if we're running on Koyeb
+    is_production = "KOYEB_APP_NAME" in os.environ
+    
+    if is_production:
+        # In production (Koyeb), use webhook
+        webhook_url = os.getenv("WEBHOOK_URL", f"https://{os.getenv('KOYEB_APP_NAME', 'app')}.koyeb.app/")
+        
+        # Add a health check endpoint for Koyeb
+        from flask import Flask, jsonify
+        app = Flask(__name__)
+        
+        @app.route('/')
+        def health_check():
+            return jsonify({"status": "healthy", "bot": "running"})
+        
+        # Start the bot with webhook
+        logger.info(f"Starting bot in production mode with webhook on {webhook_url}")
+        application.run_webhook(
+            listen="0.0.0.0",
+            port=port,
+            url_path=TELEGRAM_BOT_TOKEN,
+            webhook_url=webhook_url + TELEGRAM_BOT_TOKEN
+        )
+        
+        # Start Flask for health checks on a different thread
+        import threading
+        threading.Thread(target=lambda: app.run(host="0.0.0.0", port=8081)).start()
+    else:
+        # In development, use polling
+        logger.info("Starting flirty AI bot in development mode with polling...")
+        application.run_polling()
 
 if __name__ == "__main__":
     main() 
