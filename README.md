@@ -185,9 +185,4 @@ Koyeb is a developer-friendly serverless platform that allows you to deploy appl
   - The logs in the Koyeb dashboard for errors
   - That all environment variables are correctly set
   - That the webhook URL is correctly configured 
-  - test1
-  - test2
-  - test3
-  - test4
-  - test5
-  - test6
+  - ex1
